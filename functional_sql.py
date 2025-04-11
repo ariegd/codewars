@@ -34,12 +34,28 @@ def parity(number):
     return "even" if is_even(number) else "odd"
 
 numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+# Multilevel grouping:
+def is_prime(number):
+    if number < 2:
+        return False
+
+    divisor = 2
+
+    while number % divisor != 0:
+        divisor += 1
+
+    return divisor == number
+
+def prime(number):
+    return "prime" if is_prime(number) else "divisible"
     
 class SQL:
     def __init__(self):
         self.__func_select = ""
         self.__func_where = ""
-        self.__func_group_by = ""
+        self.__func_group_by1 = ""
+        self.__func_group_by2 = ""
         
         self.__list_sql = []
         self.__list_select = []
@@ -74,9 +90,10 @@ class SQL:
         self.func = func
         return self
         
-    def group_by(self, func = ""):
+    def group_by(self, func1 = "", func2 = ""):
         self.__exceptions(4)
-        self.__func_group_by = func
+        self.__func_group_by1 = func1
+        self.__func_group_by2 = func2
         return self
         
     def having(self, func = ""):
@@ -107,10 +124,9 @@ class SQL:
             self.__list_result = self.__list_where 
 
         # GROUP BY       
-        if bool(self.__func_group_by):
+        if bool(self.__func_group_by1):
             for x in self.__list_sql:
-                temp = self.__func_group_by(x)
-                
+                temp = self.__func_group_by1(x)    
                 if len(self.__list_group_by) == 0:
                     self.__list_group_by.append([temp, [x]])
                 else:
@@ -122,6 +138,26 @@ class SQL:
                         i += 1 
                     if i == len(self.__list_group_by):
                         self.__list_group_by.append([temp, [x]])
+            # Second parameter
+            if bool(self.__func_group_by2):
+                list_temp = [["odd",[]],["even",[]]]
+                for z in self.__list_group_by:
+                    list_prime=["prime",[]]
+                    list_divisible=["divisible",[]]
+                    for w in z[1]:
+                        if self.__func_group_by2(w) == "prime":
+                            list_prime[1].append(w)
+                        else:
+                            list_divisible[1].append(w)
+                    if z[0]=="odd":
+                        list_temp[0][1].append(list_divisible)
+                        list_temp[0][1].append(list_prime)
+                    else:
+                        list_temp[1][1].append(list_prime)
+                        list_temp[1][1].append(list_divisible)
+                self.__list_group_by = list_temp.copy()
+                        
+                        
             ## WHERE     
             if bool(self.__func_where):
                 self.__list_result = []
@@ -164,12 +200,25 @@ class SQL:
             assert (not(self.__list_priority[6]["execute"])),"DuplicateExecuteError()"
             self.__list_priority[6]["execute"] += 1
 
+print("SELECT * FROM numbers GROUP BY parity, is_prime")
+query().select().from_(numbers).group_by(parity, prime).execute()
+# [["odd", [["divisible", [1, 9]], ["prime", [3, 5, 7]]]], ["even", [["prime", [2]], ["divisible", [4, 6, 8]]]]]
+# [
+#   ["odd", 
+    #       [
+    #           ["divisible", [1, 9]], ["prime", [3, 5, 7]
+    #       ]
+    #   ]
+    #], ["even", [["prime", [2]], ["divisible", [4, 6, 8]]]]
+#]
+print("\n")
 
+"""
 print("SELECT * FROM numbers GROUP BY parity") 
 query().select().from_(numbers).group_by(parity).execute()
 # [["odd", [1, 3, 5, 7, 9]], ["even", [2, 4, 6, 8]]]
 print("\n")
-"""
+
 print("SELECT * FROM numbers") 
 query().select().from_(numbers).execute()
 # [1, 2, 3, 4, 5, 6, 7, 8, 9]
