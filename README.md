@@ -19,7 +19,7 @@ The methods are chainable and the query is executed by calling the execute metho
 ⚠️ Note: The order of appearance of a clause in a query doesn't matter. However, when it comes time for you to run the query, you MUST execute the clauses in this logical order: from first, then where, then groupBy, then having, then select and finally orderBy.
 
 Multilevel grouping:
-´´´
+```
 def is_prime(number):
     if number < 2:
         return False
@@ -33,9 +33,9 @@ def is_prime(number):
 
 def prime(number):
     return "prime" if is_prime(number) else "divisible"
-
+    
 # SELECT * FROM numbers GROUP BY parity, is_prime
 query().select().from_(numbers).group_by(parity, prime).execute()
 # [["odd", [["divisible", [1, 9]], ["prime", [3, 5, 7]]]], ["even", [["prime", [2]], ["divisible", [4, 6, 8]]]]]
-´´´
+```
 
