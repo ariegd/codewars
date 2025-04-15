@@ -49,6 +49,10 @@ def is_prime(number):
 
 def prime(number):
     return "prime" if is_prime(number) else "divisible"
+
+# Filter groups with having():
+def odd(group):
+    return group[0] == "odd"
     
 class SQL:
     def __init__(self):
@@ -56,6 +60,7 @@ class SQL:
         self.__func_where = ""
         self.__func_group_by1 = ""
         self.__func_group_by2 = ""
+        self.__func_having = ""
         
         self.__list_sql = []
         self.__list_select = []
@@ -98,7 +103,7 @@ class SQL:
         
     def having(self, func = ""):
         self.__exceptions(5)
-        self.func = func
+        self.__func_having = func
         return self
     
     def execute(self):
@@ -170,6 +175,13 @@ class SQL:
                 self.__list_result = []
                 for y in self.__list_group_by:
                      self.__list_result.append(self.__func_select(y))
+            ## HAVING
+            elif bool(self.__func_having):
+                self.__list_result = []
+                for k in self.__list_group_by:
+                    if self.__func_having(k):
+                        self.__list_result.append(k)
+                        break
             else:
                 self.__list_result = self.__list_group_by
         
@@ -200,6 +212,14 @@ class SQL:
             assert (not(self.__list_priority[6]["execute"])),"DuplicateExecuteError()"
             self.__list_priority[6]["execute"] += 1
 
+
+# <- I know, this is not a valid SQL statement, but you can understand what I am doing
+print("SELECT * FROM numbers GROUP BY parity HAVING odd(number) = true ") 
+query().select().from_(numbers).group_by(parity).having(odd).execute()
+# [["odd", [1, 3, 5, 7, 9]]]
+print("\n")
+
+"""
 print("SELECT * FROM numbers GROUP BY parity, is_prime")
 query().select().from_(numbers).group_by(parity, prime).execute()
 # [["odd", [["divisible", [1, 9]], ["prime", [3, 5, 7]]]], ["even", [["prime", [2]], ["divisible", [4, 6, 8]]]]]
@@ -213,7 +233,7 @@ query().select().from_(numbers).group_by(parity, prime).execute()
 #]
 print("\n")
 
-"""
+
 print("SELECT * FROM numbers GROUP BY parity") 
 query().select().from_(numbers).group_by(parity).execute()
 # [["odd", [1, 3, 5, 7, 9]], ["even", [2, 4, 6, 8]]]
